@@ -12,11 +12,11 @@ int next_block_size(int count, int buffer_size) {
 }
 
 int main(int argc, char* argv[]) {
-    /* check if exactly one argument is present */
-    /*if (argc != 2) {
-      printf("usage: cat filename\n");
+    /* check if there is no argument */
+    if (argc == 1) {
+      printf("usage: phrases [-l] file\n");
       return EXIT_FAILURE;
-    }*/
+    }
 
     for(int i = 1 ; i < argc ; i++){
         /* check if file can be opened and is readable */
