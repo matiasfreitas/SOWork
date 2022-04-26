@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
         fclose(input);
 
         for(int i = 0 ; ?? ; i++){
-            print("[%d] ",i+1);
+            printf("[%d] ",i+1);
             for(int j = 0 ; string[i][j] != '\0' ; j++){
                 printf("%c", string[i][j]);
             }
