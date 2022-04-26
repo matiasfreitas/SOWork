@@ -8,8 +8,9 @@
 /**
  * função para ler o ficheiro de texto para uma matriz
  * uma linha para cada frase
+ * @return número de frases encontradas no ficheiro
  */
-char[][] readFile(FILE* file);
+int readFile(FILE* file);
 /**
  * função main para correr o comando
  *
