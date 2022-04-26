@@ -3,7 +3,7 @@
 #include <unistd.h>
 #define BUFFER_SIZE 1024
 
-char[] readFile(FILE* file){
+char[][] readFile(FILE* file){
     if(input == NULL){
         printf("Não foi possível abrir o ficheiro");
         return -1;
@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
         char[BUFFER_SIZE][BUFFER_SIZE] string = readFile(input);
 
         fclose(input);
-    } else if(argc == 3) {
+    } else if(argc == 3 && argv[1] == "-l") {
         FILE* input = fopen(argv[2], "r");
 
         char[BUFFER_SIZE][BUFFER_SIZE] string = readFile(input);
