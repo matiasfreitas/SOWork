@@ -18,34 +18,18 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
 
-    for(int i = 1 ; i < argc ; i++){
-        /* check if file can be opened and is readable */
-        int fd = open(argv[i], O_RDONLY);
-        if (fd == -1) {
-            printf("error: cannot open %s\n", argv[i]);
-            return EXIT_FAILURE;
+    if(argc == 2){
+        FILE* input = fopen(argv[1], "r");
+        if(input == NULL){
+            printf("Não foi possível abrir o ficheiro");
+            return -1;
         }
-
-        /* get the file size */
-        struct stat info;
-        int ret = lstat(argv[i], &info);
-        if (ret == -1) {
-            printf("error: cannot stat %s\n", argv[i]);
-            return EXIT_FAILURE;
+        char c = fgetc(input);
+        while(c != EOF){
+            printf("%c", c);
+            c = fgetc(input);
         }
-
-        /* print the contents in blocks */
-        int count = info.st_size;
-        printf("%d\n", count);
-        char buffer[BUFFER_SIZE];
-        while (count != 0){
-            int bytesin = read(fd, buffer, next_block_size(count, BUFFER_SIZE));
-            count -= bytesin;
-            write(STDOUT_FILENO, buffer, bytesin);
-        }
-
-        /* close file */
-        close(fd);
+        fclose(input);
     }
 
     return EXIT_SUCCESS;
