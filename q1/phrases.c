@@ -19,10 +19,17 @@ int readFile(FILE* file, char[][] string&){
             c = fgetc(input);
             j++;
         }
+        
         // a partir daqui temos pontos de terminação de frases
         // não sei se cobre a parte das reticências mas penso que sim
         string[i][j] = c;
+        c = fgetc(input);
+        while (c == '.') {
+            string[i][j] = c;
+            c = fgetc(input);
+        }
         i++;
+        
     }
 
     return i;
