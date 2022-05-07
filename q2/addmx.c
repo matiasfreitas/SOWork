@@ -4,9 +4,9 @@
 
 #include "addmx.h"
 
-void addline(int column,int nLines, int* matrix1, int* matrix2, int* matrixResult){
+void addline(int column,int nLines, int nColumns, int* matrix1, int* matrix2, int* matrixResult){
     for (int i = 0; i < nLines; ++i) {
-        matrixResult[nLines*i + column] = matrix1[nLines*i + column] + matrix2[nLines*i + column];
+        matrixResult[nColumns*i + column] = matrix1[nColumns*i + column] + matrix2[nColumns*i + column];
     }
     return;
 }
@@ -31,15 +31,13 @@ int* addMatrix(int nLines, int nColumns, int* matrix1, int* matrix2, int offsetM
             perror("fork");
             abort();
         } else if (pids[j] == 0) {
-            addline(j, nLines,matrix1, matrix2, matrixResult);
+            addline(j, nLines, nColumns, matrix1, matrix2, matrixResult);
             exit(0);
         }
     }
     int status;
-    pid_t pid;
     while (n > 0) {
-        pid = wait(&status);
-        printf("Child with PID %ld exited with status 0x%x.\n", (long)pid, status);
+        wait(&status);
         --n;
     }
     return matrixResult;
@@ -70,12 +68,12 @@ int* readMatrix(int nLines, int nColumns,int* offsetMatrix, char* matrixContent)
 
     for (int i = 0; i < nLines-1; ++i) {
         for (int j = 0; j < nColumns-1; ++j) {
-            matrixResult[nLines*i + j] = readNumber(matrixContent, offsetMatrix, ' ');
+            matrixResult[nColumns*i + j] = readNumber(matrixContent, offsetMatrix, ' ');
         }
-        matrixResult[nLines*(i+1)-1] = readNumber(matrixContent, offsetMatrix, '\n');
+        matrixResult[nColumns*(i+1)-1] = readNumber(matrixContent, offsetMatrix, '\n');
     }
     for (int j = 0; j < nColumns-1; ++j) {
-        matrixResult[nLines*(nColumns-1) + j] = readNumber(matrixContent, offsetMatrix, ' ');
+        matrixResult[(nLines-1)*nColumns + j] = readNumber(matrixContent, offsetMatrix, ' ');
     }
     matrixResult[nLines*nColumns-1] = readNumber(matrixContent, offsetMatrix, '\0');
     return matrixResult;
@@ -147,14 +145,12 @@ int main(int argc, char *argv[]){
     int offsetMatrix2 = 0;
     matrix2Rows = readNumber(Matrix2Content, &offsetMatrix2, 'x');
     matrix2Columns = readNumber(Matrix2Content, &offsetMatrix2, '\n');
-
     int *Matrix2 = readMatrix(matrix2Rows, matrix2Columns, &offsetMatrix2, Matrix2Content);
-
     if(matrix1Rows == matrix2Rows && matrix1Columns == matrix2Columns){
         int* matrixResult = addMatrix(matrix1Rows, matrix1Columns, Matrix1, Matrix2, offsetMatrix1, offsetMatrix2);
         for (int i = 0; i < matrix1Rows; ++i) {
             for (int j = 0; j < matrix1Columns; ++j) {
-                printf(matrixResult[matrix1Rows*i+ j]+48);
+                printf("%d ",matrixResult[matrix1Columns*i+ j]);
             }
             printf("\n");
         }
