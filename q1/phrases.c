@@ -1,71 +1,74 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
+#include <ctype.h>
 #define BUFFER_SIZE 1024
 
-int readFile(FILE* file, char[][] string&){
-    if(input == NULL){
-        printf("Não foi possível abrir o ficheiro");
+int main(int argc, char* argv[]) {
+    FILE* input;
+    if (argc == 2) {
+        input = fopen(argv[1], "r");
+    }
+    else if (argc == 3 && !strcmp(argv[1],"-l")) {
+        input = fopen(argv[2], "r");
+    }
+    else{
+        printf("usage: phrases [-l] file\n");
+        return EXIT_FAILURE;
+    }
+    if (input == NULL) {
+        printf("Unable to open the file\n");
         return -1;
     }
-    char[BUFFER_SIZE][BUFFER_SIZE] string = {};
-    int i = 0, j = 0;
-    char c = fgetc(input);
-    while(c != EOF){
-        j = 0;
-        while(c != '!' && c != '?' && c != '.'){
-            string[i][j] = c;
-            //printf("%c", c);
-            c = fgetc(input);
-            j++;
+    char string[BUFFER_SIZE][BUFFER_SIZE];
+    int linenum = 0, j = 0;
+    char lastchar;
+
+    do
+    {
+        char c = fgetc(input);
+        if (feof(input)){
+            if(lastchar != '!' && lastchar != '?' && lastchar != '.'){
+                linenum++;
+            }
+            break;
         }
-        
-        // a partir daqui temos pontos de terminação de frases
-        // não sei se cobre a parte das reticências mas penso que sim
-        string[i][j] = c;
-        c = fgetc(input);
-        while (c == '.') {
-            string[i][j] = c;
-            c = fgetc(input);
+        string[linenum][j] = c;
+        if (!isspace(c)){
+            lastchar = c;
         }
-        i++;
-        
+        if(c == '!' || c == '?' || c == '.'){
+            FILE* temp = input;
+            int ret = 0;
+            while((c = fgetc(input)) == '.'){
+                ret = 1;
+                j++;
+                string[linenum][j] = c;
+            }
+            if(ret== 0){
+                input = temp;
+            }
+            string[linenum][j+1] = '\0';
+            linenum++;
+            j=0;
+            continue;
+        }
+        j++;
+    }  while(1);
+    fclose(input);
+    if (argc == 2) {
+        printf("%d\n",linenum);
     }
-
-    return i;
-}
-
-int main(int argc, char* argv[]) {
-    /* check if there is no argument */
-    if(argc == 1) {
-      printf("usage: phrases [-l] file\n");
-      return EXIT_FAILURE;
-    } else if(argc == 2){
-        FILE* input = fopen(argv[1], "r");
-
-        char[BUFFER_SIZE][BUFFER_SIZE] string;
-        int numberPhrases = readFile(input, string);
-
-        printf("%d", numberPhrases);
-
-        fclose(input);
-    } else if(argc == 3 && argv[1] == "-l") {
-        FILE* input = fopen(argv[2], "r");
-
-        char[BUFFER_SIZE][BUFFER_SIZE] string;
-        int numberPhrases = readFile(input, string);
-
-        fclose(input);
-
-        for(int i = 0 ; i < numberPhrases ; i++){
+    else{
+        for(int i = 0 ; i < linenum ; i++){
             printf("[%d] ",i+1);
-            for(int j = 0 ; string[i][j] != '\0' ; j++){
-                printf("%c", string[i][j]);
+            int j = 0;
+            while(string[i][j] != '\0'){
+                printf("%c",string[i][j]);
+                j++;
             }
             printf("\n");
         }
     }
-
-
     return EXIT_SUCCESS;
 }
