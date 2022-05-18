@@ -1,53 +1,67 @@
 #include "cypher.h"
 #include <stdio.h>
-#define MAX_SIZE_QUOTE = INT_MAX;
-#define MAX_SIZE_CYPHER = INT_MAX;
+#include <limits.h>
+#define MAX_SIZE_QUOTE = 4096;
+#define MAX_SIZE_CYPHER = 100;
+#define MAX_SIZE_WORD = 50;
 
-char[][] readCypher(){
-    char[MAX_SIZE_CYPHER][MAX_SIZE_CYPHER] cypher = {};
+typedef struct{
+    char word[MAX_SIZE_WORD];
+} Word;
+
+Word readCypher(){
+    FILE *dictionary;
+    dictionary = fopen ("cypher.txt", "wr"); //ver esta parte
+
+    Word cypher[MAX_SIZE_CYPHER][MAX_SIZE_CYPHER];
     int i = 0;
-    char word1[] = {}, word2[] = {};
+    char word1[MAX_SIZE_WORD];
+    char word2[MAX_SIZE_WORD];
 
-    while(word1 != EOF && word2 != EOF){
-        scanf("%s %s", word1, word2);
-        cypher[i][1] = word1;
-        cypher[i][2] = word2;
+    while(word1[0] != EOF){
+        fscanf(dictionary,"%s %s", word1, word2);
+        cypher[i][1].word = word1;
+        cypher[i][2].word = word2;
         i++;
     }
     return cypher;
 }
 
-char[][] readAndTransformQuote(char[][] cypher){
+void readAndTransformQuote(Word **cypher){
     // ler aos poucos com scanf as palavras,
     // se estiver no dicionário, printf(palavra substituta)
-    char[] word = {};
-    char c;
+    char word[MAX_SIZE_WORD];
+    char currentChar;
     int i = 0;
-    while((c = getchar()) != EOF){
+    while((currentChar = getchar()) != EOF){
         i = 0;
-        while(c != '!' && c != '?' && c != '.' && c != ' ') {
-            word[i] = c;
+        while(currentChar != '!' && currentChar != '?' && currentChar != '.' && currentChar != ' '){
+            word[i] = currentChar;
             i++;
-            c = getchar();
+            currentChar = getchar();
         }
-        if(word != {}){
-            for(int i = 0 ; i < sizeof(cypher) ; i++){
-                if(word == cypher[i][1]){
-                    printf("%s", cypher[i][2]);
-                    word = {};
+        if(word != {'\n'}){
+            for(int j = 0 ; j < sizeof(cypher) ; j++){
+                if(word == cypher[j][0].word){ //substitui a palavra pela correspondente no dicionário
+                    printf("%s", cypher[j][1].word);
+                    word = {'\n'};
                 }
             }
-        } else {
-            printf("%c", c);
+            if(word != {'\n'}){ //para o caso de ter uma palavra, mas não presente no ficheiro cypher
+                printf("%s", word);
+            }
         }
+        printf("%c", currentChar); //para o caso de não ter uma palavra, mas ter um caracter aleatório sozinho
     }
 
     //changeCypher - função para alterar o cypher no fim da transformação
 
-    return quote;
+    //return quote;
 }
 
 int main(int argc, char* argv[]){
-    char[][] cypher = readCypher();
-    char[][] quote = readAndTransformQuote(cypher);
+    Word cypher[MAX_SIZE_CYPHER][MAX_SIZE_CYPHER] = readCypher();
+    readAndTransformQuote(cypher);
+    printf("\nProcesso terminado\n");
+    return 0;
 }
