@@ -44,7 +44,7 @@ void readAndTransformQuote(Word **cypher){
             for(int j = 0 ; j < sizeof(cypher) ; j++){
                 if(word == cypher[j][0].word){ //substitui a palavra pela correspondente no dicionário
                     printf("%s", cypher[j][1].word);
-                    word = {'\n'};
+                    word = "";
                 }
             }
             if(word != {'\n'}){ //para o caso de ter uma palavra, mas não presente no ficheiro cypher
