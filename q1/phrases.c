@@ -7,21 +7,21 @@
 void readFile(FILE* input, char string[]){
     char character = fgetc(input);
     int i = 0;
-    while(character != '!' && character != '?' && character != '.'){
+    while((character != '!' && character != '?' && character != '.') && !feof(input)){
         string[i] = character;
         i++;
         character = fgetc(input);
     }
     while(character == '!' || character == '?' || character == '.') {
         string[i] = character;
-        character = fgetc(input);
         i++;
-        if (isspace(character)){
-            string[i] = character;
-            string[i+1] = '\0';
-            break;
-        }
+        character = fgetc(input);
     }
+    if (isspace(character)){
+        string[i] = character;
+        i++;
+    }
+    string[i] = '\0';
     return;
 }
 
