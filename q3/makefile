@@ -17,7 +17,7 @@ CFLAGS  = -g -Wall
 default:  cypher
 
 cypher:  cypher.o
-	$(CC) $(CFLAGS) -o cypher cypher.
+	$(CC) $(CFLAGS) -o cypher cypher.c
 
 cypher.o:  cypher.c cypher.h
 	$(CC) $(CFLAGS) -c cypher.c

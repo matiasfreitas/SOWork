@@ -1,7 +1,6 @@
 #include "cypher.h"
 #include <stdio.h>
 #include <string.h>
-#include <limits.h>
 #define MAX_SIZE_QUOTE 4096
 #define MAX_SIZE_CYPHER 100
 #define MAX_SIZE_WORD 50
@@ -10,33 +9,23 @@ typedef struct{
     char word[MAX_SIZE_WORD];
 } Word;
 
-Word** readCypher(){
+void readCypher(Word** cypher){
     FILE *dictionary;
-    dictionary = fopen ("cypher.txt", "wr"); //ver esta parte
-
-    Word cypher[MAX_SIZE_CYPHER][MAX_SIZE_CYPHER];
+    dictionary = fopen ("cypher.txt", "r"); //ver esta parte
     int i = 0;
     char word1[MAX_SIZE_WORD];
     char word2[MAX_SIZE_WORD];
 
-    while(word1[0] != EOF){
-        fscanf(dictionary,"%s %s", word1, word2);
-        /*for(int j = 0 ; j < sizeof(word1) ; j++){
-            cypher[i][1].word[j] = word1[j];
-        }*/
+    while(fscanf(dictionary,"%s %s", word1, word2) == 1){
         strcpy(cypher[i][1].word,word1);
-        /*for(int j = 0 ; j < sizeof(word2) ; j++){
-            cypher[i][2].word[j] = word2[j];
-        }*/
         strcpy(cypher[i][2].word,word2);
-        //cypher[i][1].word = word1;
-        //cypher[i][2].word = word2;
         i++;
     }
-    return cypher;
+
+
 }
 
-void readAndTransformQuote(Word cypher[][]){
+void readAndTransformQuote(Word **cypher){
     // ler aos poucos com scanf as palavras,
     // se estiver no dicionário, printf(palavra substituta)
     char word[MAX_SIZE_WORD];
@@ -69,8 +58,12 @@ void readAndTransformQuote(Word cypher[][]){
 }
 
 int main(int argc, char* argv[]){
-    Word cypher[MAX_SIZE_CYPHER][MAX_SIZE_CYPHER];
-    cypher = readCypher();
+    Word* cypher[MAX_SIZE_CYPHER];
+    for (int i = 0; i < MAX_SIZE_CYPHER; ++i) {
+        cypher[i] = (Word[MAX_SIZE_CYPHER]){};
+    }
+
+    readCypher(cypher);
     readAndTransformQuote(cypher);
     printf("\nProcesso terminado\n");
     return 0;
