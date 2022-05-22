@@ -1,70 +1,102 @@
-#include "cypher.h"
+#include <sys/wait.h>
+#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#define MAX_SIZE_QUOTE 4096
-#define MAX_SIZE_CYPHER 100
-#define MAX_SIZE_WORD 50
+#include <unistd.h>
 
-typedef struct{
-    char word[MAX_SIZE_WORD];
-} Word;
+#define READ_END 0 // PONTAS DA PIPE
+#define WRITE_END 1 // PONTAS DA PIPE
 
-void readCypher(Word** cypher){
-    FILE *dictionary;
-    dictionary = fopen ("cypher.txt", "r"); //ver esta parte
-    int i = 0;
-    char word1[MAX_SIZE_WORD];
-    char word2[MAX_SIZE_WORD];
+#define BUFF_SIZE 256 // BUFFER SIZE (MAXIMUM SIZE OF ARRAY)
+int parent(int pipe_1[2]) { 
+    close(pipe_1[READ_END]);
 
-    while(fscanf(dictionary,"%s %s", word1, word2) == 1){
-        strcpy(cypher[i][1].word,word1);
-        strcpy(cypher[i][2].word,word2);
-        i++;
+    char *string;
+    string = malloc(BUFF_SIZE);
+
+    int bytesin;
+    while ((bytesin = read(STDIN_FILENO, string, BUFF_SIZE))>0) { // CHECK IF READING
+        write(pipe_1[WRITE_END], string, bytesin);
     }
 
-
+    close(pipe_1[WRITE_END]);
+    return 0;
 }
 
-void readAndTransformQuote(Word **cypher){
-    // ler aos poucos com scanf as palavras,
-    // se estiver no dicionário, printf(palavra substituta)
-    char word[MAX_SIZE_WORD];
-    char currentChar;
-    int i = 0;
-    while((currentChar = getchar()) != EOF){
-        i = 0;
-        while(currentChar != '!' && currentChar != '?' && currentChar != '.' && currentChar != ' '){
-            word[i] = currentChar;
-            i++;
-            currentChar = getchar();
-        }
-        if(word[0] != '\0'){
-            for(int j = 0 ; j < sizeof(cypher) ; j++){
-                if(strcmp(word,cypher[j][0].word) == 0){ //substitui a palavra pela correspondente no dicionário
-                    printf("%s", cypher[j][1].word);
-                    word[0] = '\0';//word = "";
-                }
-            }
-            if(word[0] != '\0'){ //para o caso de ter uma palavra, mas não presente no ficheiro cypher
-                printf("%s", word);
-            }
-        }
-        printf("%c", currentChar); //para o caso de não ter uma palavra, mas ter um caracter aleatório sozinho
+char * cypherString(char *string) {
+    
+}
+
+int child(int pipe_1[2], int pipe_2[2]) {
+    close(pipe_1[WRITE_END]);
+    close(pipe_2[READ_END]);
+
+    char *string;
+    string = malloc(BUFF_SIZE);
+
+    int bytesin;
+    while ((bytesin = read(pipe_1[READ_END], string, BUFF_SIZE))>0) { // CHECK IF READING
+        char *stringcyphered = cypherString(string);
+        write(pipe_2[WRITE_END], stringcyphered, bytesin);
     }
 
-    //changeCypher - função para alterar o cypher no fim da transformação
+    close(pipe_1[READ_END]);
+    close(pipe_2[WRITE_END]);
+    return 0;
+}
 
-    //return quote;
+int parent2(int pipe_2[2]) {
+    close(pipe_2[WRITE_END]);
+    
+    char *string;
+    string = malloc(BUFF_SIZE);
+
+    int bytesin;
+    while((bytesin = read(pipe_2[READ_END], string, BUFF_SIZE))>0) {
+        write(STDOUT_FILENO, string, bytesin);
+    }
+
+    close(pipe_2[READ_END]);
+    return 0;
 }
 
 int main(int argc, char* argv[]){
-    Word* cypher[MAX_SIZE_CYPHER];
-    for (int i = 0; i < MAX_SIZE_CYPHER; ++i) {
-        cypher[i] = (Word[MAX_SIZE_CYPHER]){};
+    if (argc != 1) {
+        return EXIT_FAILURE;
     }
 
-    readCypher(cypher);
-    readAndTransformQuote(cypher);
-    printf("\nProcesso terminado\n");
-    return 0;
+    int pipe_dad_to_child[2];
+    int pipe_child_to_dad[2];
+
+    if (pipe(pipe_child_to_dad) < 0) {
+        return EXIT_FAILURE;
+    }
+    if (pipe(pipe_dad_to_child) < 0) {
+        return EXIT_FAILURE;
+    }
+
+    pid_t pid;
+    if ((pid = fork()) == -1) {
+        perror("fork");
+        return EXIT_FAILURE;
+    }
+    else if (pid == 0) {
+        /* child process */
+        child(pipe_dad_to_child, pipe_child_to_dad);
+        return EXIT_SUCCESS;
+    }
+    else {
+        /* parent process */
+        parent(pipe_dad_to_child);
+        if (waitpid(pid, NULL, 0) == -1) {
+            perror("wait");
+            return EXIT_FAILURE;
+        }
+        parent2(pipe_child_to_dad);
+        return EXIT_SUCCESS;
+    }
+
+    return EXIT_SUCCESS;
+
 }
