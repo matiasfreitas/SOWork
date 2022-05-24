@@ -132,6 +132,7 @@ int main(int argc, char *argv[]){
     int *Matrix2 = readMatrix(matrix2Rows, matrix2Columns, &offsetMatrix2, Matrix2Content);
 
     if(matrix1Rows == matrix2Rows && matrix1Columns == matrix2Columns){
+        printf("%dx%d\n", matrix1Rows, matrix1Columns);
         int* matrixResult = addMatrix(matrix1Rows, matrix1Columns, Matrix1, Matrix2, offsetMatrix1, offsetMatrix2);
         for (int i = 0; i < matrix1Rows; ++i) {
             for (int j = 0; j < matrix1Columns; ++j) {
