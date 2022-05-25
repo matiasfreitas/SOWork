@@ -57,7 +57,6 @@ void readAndTransformQuote(Cypher *cypher, int sizeCypher){
         sep = getWord(word);
         if((word[0]=='\0' && sep=='\0')||sep==EOF){
             endoffile = 1;
-            sep ='\0';
         }
         for(int j = 0 ; j < sizeCypher; j++){
             if(strcmp(word,cypher[j].wordToSwitch1) == 0){ //substitui a palavra pela correspondente no dicionário
