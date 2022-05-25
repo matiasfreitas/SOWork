@@ -1,3 +1,5 @@
 /.idea
 *.o
+/q1/phrases
 /q2/addmx
+/q3/cypher
