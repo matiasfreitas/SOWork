@@ -36,7 +36,7 @@ char getWord(char *word){
         return '\0';
     }
     while(isspace(currentChar)==0 && currentChar != '!'
-          && currentChar != '?'&& currentChar != '.' && currentChar != '-' && currentChar!=EOF){
+          && currentChar != '?'&& currentChar != '.' && currentChar != '-'&& currentChar != EOF){
         word[i] = currentChar;
         i++;
         currentChar = getchar();
@@ -55,7 +55,7 @@ void readAndTransformQuote(Cypher *cypher, int sizeCypher){
     while(1){
         isPrinted = 0;
         sep = getWord(word);
-        if((word[0]=='\0' && sep=='\0')||sep==EOF){
+        if((word[0]=='\0' && sep=='\0')){
             endoffile = 1;
         }
         for(int j = 0 ; j < sizeCypher; j++){
