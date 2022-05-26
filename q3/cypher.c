@@ -55,24 +55,30 @@ void readAndTransformQuote(Cypher *cypher, int sizeCypher){
     while(1){
         isPrinted = 0;
         sep = getWord(word);
-        if((word[0]=='\0' && sep=='\0')){
+        if((word[0]=='\0' && sep=='\0')||sep==EOF){
             endoffile = 1;
         }
         for(int j = 0 ; j < sizeCypher; j++){
             if(strcmp(word,cypher[j].wordToSwitch1) == 0){ //substitui a palavra pela correspondente no dicionário
                 printf("%s", cypher[j].wordToSwitch2);
-                printf("%c", sep);
+                if(endoffile==0){
+                   printf("%c", sep);
+                }
                 isPrinted = 1;
             }
             else if(strcmp(word,cypher[j].wordToSwitch2) == 0){ //substitui a palavra pela correspondente no dicionário
                 printf("%s", cypher[j].wordToSwitch1);
-                printf("%c", sep);
+                if(endoffile==0){
+                   printf("%c", sep);
+                }
                 isPrinted = 1;
             }
         }
         if(!isPrinted){ //para o caso de ter uma palavra, mas não presente no ficheiro cypher
             printf("%s", word);
-            printf("%c", sep);
+            if(endoffile==0){
+                printf("%c", sep);
+            }
         }
         if(endoffile == 1){
             break;
