@@ -1,6 +1,14 @@
+#include <sys/wait.h>
+#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <unistd.h>
+
+#define READ_END 0 // PONTAS DA PIPE
+#define WRITE_END 1 // PONTAS DA PIPE
+
+#define BUFF_SIZE 1000 // BUFFER SIZE (MAXIMUM SIZE OF ARRAY)
 
 #define MAX_SIZE_CYPHER 100
 #define MAX_SIZE_WORD 50
@@ -26,71 +34,155 @@ int readCypher(Cypher* cypher){
     return i;
 
 }
+int parent(int pipe_1[2]) { 
+    close(pipe_1[READ_END]);
 
-char getWord(char *word){
-    char currentChar;
-    int i = 0;
-    currentChar = getchar();
-    if(currentChar == EOF){
-        word[0] = '\0';
-        return '\0';
+    char *string;
+    string = malloc(BUFF_SIZE);
+
+    int bytesin;
+    while ((bytesin = read(STDIN_FILENO, string, BUFF_SIZE))>0) { // CHECK IF READING
+        write(pipe_1[WRITE_END], string, bytesin);
     }
-    while(isspace(currentChar)==0 && currentChar != '!'
-          && currentChar != '?'&& currentChar != '.' && currentChar != '-'&& currentChar != EOF){
-        word[i] = currentChar;
-        i++;
-        currentChar = getchar();
+
+    if (bytesin == -1) {
+        fprintf(stderr, "Error reading from pipe! %s\n", strerror(errno));
+        close(pipe_1[WRITE_END]);
+        return EXIT_FAILURE;
     }
-    word[i] = '\0';
-    return currentChar;
+
+    close(pipe_1[WRITE_END]);
+    return EXIT_SUCCESS;
 }
 
-void readAndTransformQuote(Cypher *cypher, int sizeCypher){
-    // ler aos poucos com scanf as palavras,
-    // se estiver no dicionário, printf(palavra substituta)
-    char word[MAX_SIZE_WORD] = {'\0'};
-    char sep;
-    int isPrinted = 0;
-    int endoffile = 0;
-    while(1){
-        isPrinted = 0;
-        sep = getWord(word);
-        if((word[0]=='\0' && sep=='\0')||sep==EOF){
-            endoffile = 1;
-        }
-        for(int j = 0 ; j < sizeCypher; j++){
-            if(strcmp(word,cypher[j].wordToSwitch1) == 0){ //substitui a palavra pela correspondente no dicionário
-                printf("%s", cypher[j].wordToSwitch2);
-                if(endoffile==0){
-                   printf("%c", sep);
-                }
-                isPrinted = 1;
-            }
-            else if(strcmp(word,cypher[j].wordToSwitch2) == 0){ //substitui a palavra pela correspondente no dicionário
-                printf("%s", cypher[j].wordToSwitch1);
-                if(endoffile==0){
-                   printf("%c", sep);
-                }
-                isPrinted = 1;
-            }
-        }
-        if(!isPrinted){ //para o caso de ter uma palavra, mas não presente no ficheiro cypher
-            printf("%s", word);
-            if(endoffile==0){
-                printf("%c", sep);
-            }
-        }
-        if(endoffile == 1){
-            break;
-        }
+
+char* string_replace(char* substring_source, int substring, char* with) {
+    if (substring_source == NULL) {
+        return NULL;
     }
+ 
+    memmove(
+        substring_source + strlen(with),
+        substring_source + substring,
+        strlen(substring_source) - substring + 1
+    );
+ 
+    memcpy(substring_source, with, strlen(with));
+    return substring_source + strlen(with);
+}
+
+int child(int pipe_1[2], int pipe_2[2],Cypher *cypher, int sizeCypher) {
+    close(pipe_1[WRITE_END]);
+    close(pipe_2[READ_END]);
+
+    char *string = {'\0'};
+
+    string = malloc(BUFF_SIZE);
+
+    int bytesin;
+    while ((bytesin = read(pipe_1[READ_END], string, BUFF_SIZE))>0) { // CHECK IF READING
+        char word[MAX_SIZE_WORD]={'\0'};
+        char *beginingofword = string;
+        char *begininoftext = string;
+        int i = 0;
+        for (string;*string!='\0';string++){
+            if(!((*string >= 'a' && *string <= 'z') || (*string >= 'A' && *string <= 'Z')|| (*string >= '1' && *string <= '9'))){
+                i = 0;
+                for(int j = 0 ; j < sizeCypher; j++){
+                    if(strcmp(word,cypher[j].wordToSwitch1) == 0){ //substitui a palavra pela correspondente no dicionário
+                        string = string_replace(beginingofword+1,strlen(word),cypher[j].wordToSwitch2);
+                    }
+                    else if(strcmp(word,cypher[j].wordToSwitch2) == 0){ //substitui a palavra pela correspondente no dicionário
+                       string = string_replace(beginingofword+1,strlen(word),cypher[j].wordToSwitch1);
+                    }
+                }
+                for(int k = 0;k<MAX_SIZE_WORD;k++){
+                    word[k]='\0';
+                }
+                beginingofword = string;
+            }
+            else{
+               word[i]=*string;
+               i++; 
+            }
+        }
+        begininoftext[strlen(begininoftext)+1]='\0';
+        write(pipe_2[WRITE_END], begininoftext, bytesin);
+    }
+
+    if (bytesin == -1) {
+        fprintf(stderr, "Error reading from pipe! %s\n", strerror(errno));
+        close(pipe_1[READ_END]);
+        close(pipe_2[WRITE_END]);
+        return EXIT_FAILURE;
+    }
+
+    close(pipe_1[READ_END]);
+    close(pipe_2[WRITE_END]);
+    return EXIT_SUCCESS;
+}
+
+int parent2(int pipe_2[2]) {
+    close(pipe_2[WRITE_END]);
+    
+    char *string;
+    string = malloc(BUFF_SIZE);
+
+    int bytesin;
+    while((bytesin = read(pipe_2[READ_END], string, BUFF_SIZE))>0) {
+        write(STDOUT_FILENO, string, bytesin);
+    }
+
+    if (bytesin == -1) {
+        fprintf(stderr, "Error reading from pipe: %s\n", strerror(errno));
+        close(pipe_2[READ_END]);
+        return EXIT_FAILURE;
+    }
+
+    close(pipe_2[READ_END]);
+    return EXIT_SUCCESS;
 }
 
 int main(int argc, char* argv[]){
-    Cypher cypher[MAX_SIZE_CYPHER];
+    if (argc != 1) {
+        return EXIT_FAILURE;
+    }
+     Cypher cypher[MAX_SIZE_CYPHER];
     int sizeCypher;
     sizeCypher = readCypher(cypher);
-    readAndTransformQuote(cypher, sizeCypher);
-    printf("\nProcesso terminado\n");
-    return 0;
+
+    int pipe_dad_to_child[2];
+    int pipe_child_to_dad[2];
+
+    if (pipe(pipe_child_to_dad) < 0) {
+        return EXIT_FAILURE;
+    }
+    if (pipe(pipe_dad_to_child) < 0) {
+        return EXIT_FAILURE;
+    }
+
+    pid_t pid;
+    if ((pid = fork()) < 0) {
+        perror("fork");
+        return EXIT_FAILURE;
+    }
+    else if (pid == 0) {
+        /* child process */
+        child(pipe_dad_to_child, pipe_child_to_dad,cypher,sizeCypher);
+        return EXIT_SUCCESS;
+    }
+    else {
+        /* parent process */
+        parent(pipe_dad_to_child);
+        if (waitpid(pid, NULL, 0) < 0) {
+            fprintf(stderr, "Error waiting for child: %s\n", strerror(errno));
+            return EXIT_FAILURE;
+        }
+
+        parent2(pipe_child_to_dad);
+        return EXIT_SUCCESS;
+    }
+
+    return EXIT_SUCCESS;
+
 }
