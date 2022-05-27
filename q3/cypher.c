@@ -21,6 +21,7 @@ typedef struct{
 int readCypher(Cypher* cypher){
     FILE *dictionary;
     dictionary = fopen ("cypher.txt", "r"); // OPEN FILE
+    //change here to use another dictionary
     int i = 0;
     char word1[MAX_SIZE_WORD];
     char word2[MAX_SIZE_WORD];
