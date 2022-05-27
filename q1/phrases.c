@@ -10,12 +10,12 @@ void readFile(FILE* input, char string[]){
     while((character != '!' && character != '?' && character != '.') && !feof(input)){
         string[i] = character;
         i++;
-        character = fgetc(input);
+        character = fgetc(input); // GET NEW CHARACTER
     }
     while(character == '!' || character == '?' || character == '.') {
         string[i] = character;
         i++;
-        character = fgetc(input);
+        character = fgetc(input); // GET NEW CHARACTER
     }
     if (isspace(character)){
         string[i] = character;
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
         if (strcmp(argv[1],"-l") == 0){
             printf("[%d] ",lineNum+1);
             int j = 0;
-            while(string[j] != '\0'){
+            while(string[j] != '\0'){ 
                 printf("%c",string[j]);
                 j++;
             }
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
         }
         lineNum ++;
     }
-    fclose(input);
+    fclose(input); // CLOSE FILE
     if (argc == 2) {
         printf("%d\n",lineNum);
     }

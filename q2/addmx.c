@@ -5,7 +5,7 @@
 #include "addmx.h"
 
 void addline(int column,int nLines, int nColumns, int* matrix1, int* matrix2, int* matrixResult){
-    for (int i = 0; i < nLines; ++i) {
+    for (int i = 0; i < nLines; ++i) { // GO THROUGH ALL LINES
         matrixResult[nColumns*i + column] = matrix1[nColumns*i + column] + matrix2[nColumns*i + column];
     }
     return;
@@ -18,15 +18,15 @@ int* addMatrix(int nLines, int nColumns, int* matrix1, int* matrix2, int offsetM
                              MAP_SHARED | MAP_ANONYMOUS,
                              0,0);
 
-    if(matrixResult == MAP_FAILED){
+    if(matrixResult == MAP_FAILED){ // ERROR
         printf("Result Matrix Failed\n");
         exit(1);
     }
     pid_t pids[nColumns];
     int n = nColumns;
-    for (int j = 0; j < nColumns; ++j) {
+    for (int j = 0; j < nColumns; ++j) { // GO THROUGH COLUMNS
         pids[j] = fork();
-        if (pids[j] < 0) {
+        if (pids[j] < 0) { // CAN'T BE NEGATIVE
             perror("fork");
             abort();
         } else if (pids[j] == 0) {
@@ -60,13 +60,13 @@ int* readMatrix(int nLines, int nColumns,int* offsetMatrix, char* matrixContent)
                              MAP_SHARED | MAP_ANONYMOUS,
                              0,0);
 
-    if(matrixResult == MAP_FAILED){
+    if(matrixResult == MAP_FAILED){ // ERROR
         printf("Read Matrix Failed\n");
         exit(1);
     }
 
     for (int i = 0; i < nLines-1; ++i) {
-        for (int j = 0; j < nColumns-1; ++j) {
+        for (int j = 0; j < nColumns-1; ++j) { // GO THROUGH MATRIX
             matrixResult[nColumns*i + j] = readNumber(matrixContent, offsetMatrix, ' ');
         }
         matrixResult[nColumns*(i+1)-1] = readNumber(matrixContent, offsetMatrix, '\n');
@@ -80,17 +80,17 @@ int* readMatrix(int nLines, int nColumns,int* offsetMatrix, char* matrixContent)
 
 char *openFile(char *argv[], int index){
     const char *filepathMatrix1 = argv[index];
-    int fileMatrix1 = open(filepathMatrix1, O_RDWR);
+    int fileMatrix1 = open(filepathMatrix1, O_RDWR); // OPEN FILE
     if(fileMatrix1 < 0){
         printf("\n\"%s \" could not open\n",
-               filepathMatrix1);
+               filepathMatrix1); // ERROR
         exit(1);
     }
 
     struct stat statbufMatrix1;
     int errMatrix1 = fstat(fileMatrix1, &statbufMatrix1);
     if(errMatrix1 < 0){
-        printf("\n\"%s \" could not open\n",
+        printf("\n\"%s \" could not open\n", // ERROR
                filepathMatrix1);
         exit(2);
     }
@@ -109,11 +109,11 @@ char *openFile(char *argv[], int index){
 
 int main(int argc, char *argv[]){
     if(argc == 1){
-        printf("usage: addmx file1 file2\n");
+        printf("usage: addmx file1 file2\n"); // ERROR WITH USAGE
         exit(0);
     }
     else if(argc < 3){
-        printf("File path not mentioned\n");
+        printf("File path not mentioned\n"); // ERROR WITH FILE PATH
         exit(0);
     }
 
