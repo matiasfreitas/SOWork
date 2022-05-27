@@ -3,6 +3,8 @@
 //
 
 #include "addmx.h"
+#include <sys/types.h>
+#include <sys/wait.h>
 
 void addline(int column,int nLines, int nColumns, int* matrix1, int* matrix2, int* matrixResult){
     for (int i = 0; i < nLines; ++i) { // GO THROUGH ALL LINES
