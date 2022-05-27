@@ -106,7 +106,7 @@ int child(int pipe_1[2], int pipe_2[2],Cypher *cypher, int sizeCypher) {
                i++; 
             }
         }
-        write(pipe_2[WRITE_END], string, bytesin);
+        write(pipe_2[WRITE_END], string, strlen(string));
     }
 
     if (bytesin == -1) {
@@ -129,7 +129,7 @@ int parent2(int pipe_2[2]) {
 
     int bytesin;
     while((bytesin = read(pipe_2[READ_END], string, BUFF_SIZE))>0) {
-        printf("%s",string);
+        write(STDOUT_FILENO, string, strlen(string));
     }
 
     if (bytesin == -1) {
