@@ -75,7 +75,7 @@ int child(int pipe_1[2], int pipe_2[2],Cypher *cypher, int sizeCypher) {
     close(pipe_1[WRITE_END]);
     close(pipe_2[READ_END]);
 
-    char *string = {'\0'};
+    char *string;
 
     string = malloc(BUFF_SIZE);
 
@@ -83,31 +83,30 @@ int child(int pipe_1[2], int pipe_2[2],Cypher *cypher, int sizeCypher) {
     while ((bytesin = read(pipe_1[READ_END], string, BUFF_SIZE))>0) { // CHECK IF READING
         char word[MAX_SIZE_WORD]={'\0'};
         char *beginingofword = string;
-        char *begininoftext = string;
+        char *text = string;
         int i = 0;
-        for (string;*string!='\0';string++){
-            if(!((*string >= 'a' && *string <= 'z') || (*string >= 'A' && *string <= 'Z')|| (*string >= '1' && *string <= '9'))){
+        for (text;*text!='\0';text++){
+            if(!((*text >= 'a' && *text <= 'z') || (*text >= 'A' && *text <= 'Z')|| (*text >= '1' && *text <= '9'))){
                 i = 0;
                 for(int j = 0 ; j < sizeCypher; j++){
                     if(strcmp(word,cypher[j].wordToSwitch1) == 0){ //substitui a palavra pela correspondente no dicionário
-                        string = string_replace(beginingofword+1,strlen(word),cypher[j].wordToSwitch2);
+                        text = string_replace(beginingofword+1,strlen(word),cypher[j].wordToSwitch2);
                     }
                     else if(strcmp(word,cypher[j].wordToSwitch2) == 0){ //substitui a palavra pela correspondente no dicionário
-                       string = string_replace(beginingofword+1,strlen(word),cypher[j].wordToSwitch1);
+                       text = string_replace(beginingofword+1,strlen(word),cypher[j].wordToSwitch1);
                     }
                 }
                 for(int k = 0;k<MAX_SIZE_WORD;k++){
                     word[k]='\0';
                 }
-                beginingofword = string;
+                beginingofword = text;
             }
             else{
-               word[i]=*string;
+               word[i]=*text;
                i++; 
             }
         }
-        begininoftext[strlen(begininoftext)+1]='\0';
-        write(pipe_2[WRITE_END], begininoftext, bytesin);
+        write(pipe_2[WRITE_END], string, bytesin);
     }
 
     if (bytesin == -1) {
@@ -130,7 +129,7 @@ int parent2(int pipe_2[2]) {
 
     int bytesin;
     while((bytesin = read(pipe_2[READ_END], string, BUFF_SIZE))>0) {
-        write(STDOUT_FILENO, string, bytesin);
+        printf("%s",string);
     }
 
     if (bytesin == -1) {
